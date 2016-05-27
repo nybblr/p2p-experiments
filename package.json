@@ -24,5 +24,11 @@
   "homepage": "https://github.com/electron/electron-quick-start#readme",
   "devDependencies": {
     "electron-prebuilt": "latest"
+  },
+  "dependencies": {
+    "gulf": "~4.0.4",
+    "gulf-textarea": "~4.0.1",
+    "ot-text": "~1.0.1",
+    "ottypes": "~1.0.3"
   }
 }
