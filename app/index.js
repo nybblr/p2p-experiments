@@ -7,7 +7,10 @@ var textarea = document.querySelector('textarea#doc');
 var textareaDoc = bindEditor(textarea);
 var text = 'hello';
 
-peer('chat.sock').then(stream => {
+var path = 'chat.sock';
+var transport = require('./transports/socket')(path);
+
+peer(transport).then(stream => {
   console.log('started');
   console.log(stream.server ? 'master' : 'slave');
   window.stream = stream;

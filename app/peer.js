@@ -1,12 +1,9 @@
-var server = require('./server');
-var client = require('./client');
-
-module.exports = path => {
+module.exports = transport => {
   return new Promise((resolve, reject) => {
-    client(path)
+    transport.client()
       .then(resolve)
       .catch(err => {
-        server(path).then(resolve).catch(reject);
+        transport.server().then(resolve).catch(reject);
       });
   });
 };
