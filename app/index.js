@@ -8,7 +8,8 @@ var textareaDoc = bindEditor(textarea);
 var text = 'hello';
 
 var path = 'chat.sock';
-var transport = require('./transports/socket')(path);
+// var transport = require('./transports/socket')(path);
+var transport = require('./transports/mdns')({ port: 4321, name: 'nybblr' });
 
 peer(transport).then(stream => {
   console.log('started');
