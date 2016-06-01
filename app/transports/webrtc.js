@@ -1,21 +1,5 @@
-const zlib = require('zlib');
+var {shrink, expand} = require('../utils/shrink');
 require('../vendor/adapter');
-
-var deflate = string => zlib.deflateSync(string);
-var inflate = string => zlib.inflateSync(string);
-
-var safe64 = string =>
-  string.replace(/[+\/]/g, m => m == '+' ? '-' : '_');
-var unsafe64 = string =>
-  string.replace(/[-_]/g, m => m == '-' ? '+' : '/');
-
-var encode = buffer =>
-  safe64(buffer.toString('base64'));
-var decode = string =>
-  Buffer.from(unsafe64(string), 'base64');
-
-var shrink = string => encode(deflate(string));
-var expand = string => inflate(decode(string)).toString();
 
 var shrinkDesc = desc => shrink(desc.sdp);
 var expandDesc = (string, type) =>
