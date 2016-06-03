@@ -2,10 +2,11 @@ var peer = require('./peer');
 
 var textOT = require('ottypes').text
 var gulf = require('gulf');
-var bindEditor = require('gulf-textarea');
-var textarea = document.querySelector('textarea#doc');
-var textareaDoc = bindEditor(textarea);
 var text = 'hello';
+
+var doc = require('gulf-textarea')(
+  document.querySelector('textarea#doc')
+);
 
 var path = 'chat.sock';
 // var transport = require('./transports/socket')(path);
@@ -17,15 +18,15 @@ peer(transport).then(stream => {
   console.log(stream.server ? 'master' : 'slave');
   window.stream = stream;
 
-  var textareaMaster = textareaDoc.masterLink();
+  var textareaMaster = doc.masterLink();
 
   if (stream.server) {
     // master
-    gulf.Document.create(new gulf.MemoryAdapter, textOT, text, (err, doc) => {
-      var slave1 = doc.slaveLink();
+    gulf.Document.create(new gulf.MemoryAdapter, textOT, text, (err, master) => {
+      var slave1 = master.slaveLink();
       stream.pipe(slave1).pipe(stream);
 
-      var slave2 = doc.slaveLink();
+      var slave2 = master.slaveLink();
       textareaMaster.pipe(slave2).pipe(textareaMaster);
     });
   } else {
