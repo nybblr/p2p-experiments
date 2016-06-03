@@ -9,7 +9,8 @@ var text = 'hello';
 
 var path = 'chat.sock';
 // var transport = require('./transports/socket')(path);
-var transport = require('./transports/mdns')({ port: 4321, name: 'nybblr' });
+// var transport = require('./transports/mdns')({ port: 4321, name: 'nybblr' });
+var transport = require('./transports/webrtc')();
 
 peer(transport).then(stream => {
   console.log('started');

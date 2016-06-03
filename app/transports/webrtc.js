@@ -8,6 +8,7 @@ var expandDesc = (string, type) =>
 var gets = () => {
   return new Promise((resolve, reject) => {
     window.resolve = resolve;
+    window.reject = reject;
   });
 };
 
@@ -29,7 +30,6 @@ var icedDescription = () => {
       return;
     }
     peerConnection.onicecandidate = e => {
-      console.log('ICE candidate (pc2)', e);
       if (e.candidate == null) {
         iced = true;
         resolve(peerConnection.localDescription);
@@ -37,8 +37,6 @@ var icedDescription = () => {
     };
   });
 };
-
-icedDescription();
 
 var initDataChannel = function () {
   var channel = peerConnection.createDataChannel('RTCDataChannel', {reliable: true})
@@ -55,27 +53,13 @@ var initDataChannel = function () {
 var createOffer = () => {
   peerConnection.createOffer().then(desc => {
     peerConnection.setLocalDescription(desc);
-    console.log('created local offer', desc);
   });
 
   return icedDescription();
 };
 
 var handleAnswer = answer => {
-  console.log('Received remote answer: ', answer);
   peerConnection.setRemoteDescription(answer);
-};
-
-peerConnection.ondatachannel = e => {
-  var channel = e.channel || e;
-  console.log('Received datachannel (pc2)', arguments)
-  window.channel = channel;
-  channel.onopen = e => {
-    console.log('data channel connect');
-  };
-  channel.onmessage = e => {
-    console.log('Got message (pc2)', e.data);
-  };
 };
 
 var handleOffer = offer => {
@@ -84,34 +68,64 @@ var handleOffer = offer => {
 
 var createAnswer = () => {
   peerConnection.createAnswer().then(answer => {
-    console.log('Created local answer: ', answer);
     peerConnection.setLocalDescription(answer);
   });
 
   return icedDescription();
 };
 
+module.exports = () => {
+  icedDescription();
 
-window.go = master => {
-  if (master) {
-    var channel = initDataChannel();
-    window.channel = channel;
-    createOffer().then(offer => {
-      var offerStr = shrinkDesc(offer);
-      console.log(offerStr);
-      gets().then(answerStr => {
-        var answer = expandDesc(answerStr, 'answer');
-        handleAnswer(answer);
+  return {
+    server() {
+      return new Promise((resolve, reject) => {
+        var channel = initDataChannel();
+        channel.server = true;
+
+        createOffer().then(offer => {
+          var offerStr = shrinkDesc(offer);
+          console.log(offerStr);
+          gets().then(answerStr => {
+            var answer = expandDesc(answerStr, 'answer');
+            handleAnswer(answer);
+          }, reject);
+        }, reject);
+
+        channel.onopen = e => {
+          resolve(channel);
+        };
+        channel.onerror = err => {
+          reject(err);
+        };
+      })
+    },
+
+    client() {
+      return new Promise((resolve, reject) => {
+        peerConnection.ondatachannel = e => {
+          var channel = e.channel || e;
+          channel.onopen = e => {
+            resolve(channel);
+          };
+          channel.onerror = err => {
+            reject(err);
+          };
+          channel.onmessage = e => {
+            console.log('Got message (pc2)', e.data);
+          };
+        };
+
+        gets().then(offerStr => {
+          var offer = expandDesc(offerStr, 'offer');
+          handleOffer(offer);
+          createAnswer().then(answer => {
+            var answerStr = shrinkDesc(answer);
+            console.log(answerStr);
+          }, reject);
+        }, reject);
       });
-    });
-  } else {
-    gets().then(offerStr => {
-      var offer = expandDesc(offerStr, 'offer');
-      handleOffer(offer);
-      createAnswer().then(answer => {
-        var answerStr = shrinkDesc(answer);
-        console.log(answerStr);
-      });
-    });
-  }
+    }
+  };
 };
+
