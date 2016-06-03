@@ -26,6 +26,7 @@
     "electron-prebuilt": "~1.1.3"
   },
   "dependencies": {
+    "data-channel": "Raynos/data-channel",
     "gulf": "~4.0.4",
     "gulf-textarea": "~4.0.1",
     "mdns": "~2.3.3",
