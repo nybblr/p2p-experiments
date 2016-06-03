@@ -1,14 +1,17 @@
+var fs = require('fs');
 var peer = require('./peer');
 
 var textOT = require('ottypes').text
 var gulf = require('gulf');
-var text = 'hello';
+var text = fs.readFileSync(__dirname + '/index.js', 'utf8');
 
-// var doc = require('gulf-textarea')(
-//   document.querySelector('textarea#doc')
-// );
+var textarea = document.querySelector('textarea#doc');
+
+// var doc = require('gulf-textarea')(textarea);
 require('codemirror/mode/javascript/javascript');
-var cm = require('codemirror')(document.body);
+var cm = require('codemirror').fromTextArea(textarea, {
+  lineNumbers: true
+});
 var doc = require('gulf-codemirror')(cm);
 
 // var transport = require('./transports/socket')('chat.sock');
