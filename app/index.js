@@ -4,7 +4,8 @@ var peer = require('./peer');
 var transport = require('./transports/mdns')({ port: 4321, name: 'nybblr' });
 // var transport = require('./transports/webrtc')();
 
-var resolver = require('./resolvers/ot');
+// var resolver = require('./resolvers/ot');
+var resolver = require('./resolvers/crate');
 
 peer(transport).then(stream => {
   console.log('started');

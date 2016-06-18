@@ -9,7 +9,13 @@ body {
   flex-direction: column;
 }
 
-.CodeMirror {
+.CodeMirror, .ace_editor {
   flex: 1;
   height: 100%;
+  margin: 0;
+}
+
+.ace_editor .remote-marker {
+  position: absolute;
+  background: rgba(80,150,200,0.7);
 }
