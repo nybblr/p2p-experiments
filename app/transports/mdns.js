@@ -1,8 +1,9 @@
-var net = require('net');
+var WS = require('ws');
+var WSS = WS.Server;
 var mdns = require('mdns');
 
 module.exports = ({name, port, timeout = 1000}) => {
-  var serviceType = mdns.tcp('stream', name);
+  var serviceType = mdns.tcp('ws', name);
   console.log(serviceType);
 
   return {
@@ -10,11 +11,11 @@ module.exports = ({name, port, timeout = 1000}) => {
       return new Promise((resolve, reject) => {
         var ad = mdns.createAdvertisement(serviceType, port);
 
-        var server = net.createServer(client => {
-          resolve(client);
-        })
-          .on('error', (err) => { reject(err); })
-          .listen(port, () => { ad.start(); });
+        var server = new WSS({ port });
+        server.on('connection', socket => {
+          ad.start();
+          resolve(socket);
+        });
       })
     },
 
@@ -34,10 +35,12 @@ module.exports = ({name, port, timeout = 1000}) => {
           clearTimeout(id);
           browser.stop();
 
-          var client = net.createConnection(service, () => {
-            resolve(client);
-          })
-            .on('error', (err) => { reject(err); })
+          var address = `ws://${service.host}:${service.port}`;
+          var socket = new WS(address);
+
+          socket.on('open', () => {
+            resolve(socket);
+          });
         });
 
         browser.start();

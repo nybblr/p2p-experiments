@@ -1,4 +1,4 @@
-var toStream = require('data-channel');
+var toSocket = require('../utils/rtctosocket');
 var {shrink, expand} = require('../utils/shrink');
 var gets = require('../utils/gets');
 require('../vendor/adapter');
@@ -62,7 +62,7 @@ module.exports = () => {
     server() {
       return new Promise((resolve, reject) => {
         var channel = initDataChannel(pc);
-        resolve(masterify(toStream(channel)));
+        resolve(masterify(toSocket(channel)));
 
         createOffer(pc).then(offer => {
           var offerStr = shrinkDesc(offer);
@@ -79,7 +79,7 @@ module.exports = () => {
       return new Promise((resolve, reject) => {
         pc.ondatachannel = e => {
           var channel = e.channel || e;
-          resolve(toStream(channel));
+          resolve(toSocket(channel));
         };
 
         gets().then(offerStr => {

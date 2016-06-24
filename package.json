@@ -32,13 +32,13 @@
     "animals": "0.0.x",
     "codemirror": "~5.15.2",
     "crate-core": "*",
-    "data-channel": "Raynos/data-channel",
     "gulf": "~4.0.4",
     "gulf-codemirror": "~4.0.2",
     "gulf-textarea": "~4.0.1",
     "mdns": "~2.3.3",
     "ot-text": "~1.0.1",
     "ottypes": "~1.0.3",
-    "string-hash": "1.1.x"
+    "string-hash": "1.1.x",
+    "ws": "^1.1.0"
   }
 }
