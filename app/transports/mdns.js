@@ -2,6 +2,11 @@ var WS = require('ws');
 var WSS = WS.Server;
 var mdns = require('mdns');
 
+var masterify = stream => {
+  stream.server = true;
+  return stream;
+};
+
 module.exports = ({name, port, timeout = 1000}) => {
   var serviceType = mdns.tcp('ws', name);
   console.log(serviceType);
@@ -14,7 +19,7 @@ module.exports = ({name, port, timeout = 1000}) => {
         var server = new WSS({ port });
         server.on('connection', socket => {
           ad.start();
-          resolve(socket);
+          resolve(masterify(socket));
         });
       })
     },
