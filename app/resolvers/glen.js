@@ -62,6 +62,9 @@ var edit = (doc) => {
     }
   };
 
+  window.docAsString = () => docToString(doc);
+  window.debug = debug;
+
   // var insertRemoveOp = false;
   //
   // editor.getSession().getSelection().on('changeCursor', function(e, sel){
@@ -140,7 +143,7 @@ var edit = (doc) => {
           doc.insert(text[j], i);
           break;
         case 'remove':
-          console.log('remove: ' + begin);
+          console.log('remove: ' + text[j] + ' at ' + begin);
           doc.remove(begin);
           break;
       };
@@ -162,7 +165,7 @@ var edit = (doc) => {
   doc.on('remoteRemove', (index) => {
     if (index === -1) { return; }
     editor.watcherExt.noWatch(() => {
-      console.log('remote remove: ' + index);
+      console.log('remote remove: ' + editor.getContent().split('')[index-1] + ' at ' + (index-1));
       editor.replace(index-1, index, '');
     });
     debug();
