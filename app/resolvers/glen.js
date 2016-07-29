@@ -5,6 +5,64 @@ var text = fs.readFileSync(__dirname + '/../index.js', 'utf8');
 var textarea = document.querySelector('textarea#doc');
 var crate = require('crate-core');
 
+var diffsToOps = (diffs) => {
+  var start = 0;
+  var end = 0;
+  var type = 0;
+  var text = '';
+  var diff;
+  for (var i = 0; i < diffs.length; i++) {
+    var exit = false;
+    diff = diffs[i];
+    [type, text] = diff;
+
+    switch (type) {
+      case 0:
+        // No change
+        start = start + text.length;
+        end = end + text.length;
+        break;
+      case 1:
+        // Addition
+        end = end + text.length;
+        exit = true;
+        break;
+      case -1:
+        // Removal
+        end = end + text.length;
+        exit = true;
+        break;
+    }
+
+    if (exit) { break; }
+  }
+
+  var e;
+  var [type, text] = diff;
+  switch (type) {
+    case 1:
+      e = {
+        action: 'insert',
+        start,
+        end,
+        text
+      };
+      break;
+    case -1:
+      e = {
+        action: 'remove',
+        start,
+        end,
+        text
+      };
+      break;
+    default:
+      return;
+  }
+
+  return [e];
+};
+
 module.exports = stream => {
   var doc = new crate(null, stream);
   window.doc = doc;
@@ -79,76 +137,24 @@ var edit = (doc) => {
   // });
 
   editor.on('contentChangedExt', (_, diffs) => {
-    var start = 0;
-    var end = 0;
-    var text = '';
-    var diff;
-    for (var i = 0; i < diffs.length; i++) {
-      var exit = false;
-      diff = diffs[i];
-      var [type, text] = diff;
+    var ops = diffsToOps(diffs);
 
-      switch (type) {
-        case 0:
-          // No change
-          start = start + text.length;
-          end = end + text.length;
-          break;
-        case 1:
-          // Addition
-          end = end + text.length;
-          exit = true;
-          break;
-        case -1:
-          // Removal
-          end = end + text.length;
-          exit = true;
-          break;
-      }
-
-      if (exit) { break; }
-    }
-
-    var e;
-    var [type, text] = diff;
-    switch (type) {
-      case 1:
-        e = {
-          action: 'insert',
-          start,
-          end,
-          text
+    ops.forEach(({ start, end, text, action }) => {
+      var j = 0;
+      for (var i=start; i<end; ++i){
+        switch (action){
+          case 'insert':
+            console.log('insert: ' + text[j] + ' at ' + i);
+            doc.insert(text[j], i);
+            break;
+          case 'remove':
+            console.log('remove: ' + text[j] + ' at ' + start);
+            doc.remove(start);
+            break;
         };
-        break;
-      case -1:
-        e = {
-          action: 'remove',
-          start,
-          end,
-        };
-        break;
-      default:
-        return;
-    }
-
-    var begin, end, text, message, j=0;
-
-    begin = e.start;
-    end = e.end;
-
-    for (var i=begin; i<end; ++i){
-      switch (e.action){
-        case 'insert':
-          console.log('insert: ' + text[j] + ' at ' + i);
-          doc.insert(text[j], i);
-          break;
-        case 'remove':
-          console.log('remove: ' + text[j] + ' at ' + begin);
-          doc.remove(begin);
-          break;
+        ++j;
       };
-      ++j;
-    };
+    });
 
     debug();
   });
