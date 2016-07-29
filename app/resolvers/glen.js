@@ -139,7 +139,7 @@ var edit = (doc) => {
     if (index === -1) { return; }
     editor.watcherExt.noWatch(() => {
       console.log('remote insert: ' + element + ' at ' + index);
-      editor.replace(index-1, index-1, element);
+      editor.replace(index-1, index-1, element, false);
     });
     debug();
   });
@@ -148,7 +148,7 @@ var edit = (doc) => {
     if (index === -1) { return; }
     editor.watcherExt.noWatch(() => {
       console.log('remote remove: ' + editor.getContent().split('')[index-1] + ' at ' + (index-1));
-      editor.replace(index-1, index, '');
+      editor.replace(index-1, index, '', false);
     });
     debug();
   });
