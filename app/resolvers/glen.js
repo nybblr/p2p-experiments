@@ -6,61 +6,36 @@ var textarea = document.querySelector('textarea#doc');
 var crate = require('crate-core');
 
 var diffsToOps = (diffs) => {
-  var start = 0;
-  var end = 0;
-  var type = 0;
-  var text = '';
-  var diff;
-  for (var i = 0; i < diffs.length; i++) {
-    var exit = false;
-    diff = diffs[i];
-    [type, text] = diff;
+  var ops = [];
+  var pointer = 0;
+  var oldPointer = pointer;
 
+  diffs.forEach(([type, text]) => {
     switch (type) {
       case 0:
-        // No change
-        start = start + text.length;
-        end = end + text.length;
+        pointer += text.length;
         break;
       case 1:
-        // Addition
-        end = end + text.length;
-        exit = true;
+        pointer += text.length;
+        ops.push({
+          text,
+          action: 'insert',
+          start: oldPointer,
+          end: pointer
+        });
         break;
       case -1:
-        // Removal
-        end = end + text.length;
-        exit = true;
+        ops.push({
+          text,
+          action: 'remove',
+          start: oldPointer,
+          end: oldPointer + text.length
+        });
         break;
     }
-
-    if (exit) { break; }
-  }
-
-  var e;
-  var [type, text] = diff;
-  switch (type) {
-    case 1:
-      e = {
-        action: 'insert',
-        start,
-        end,
-        text
-      };
-      break;
-    case -1:
-      e = {
-        action: 'remove',
-        start,
-        end,
-        text
-      };
-      break;
-    default:
-      return;
-  }
-
-  return [e];
+    oldPointer = pointer;
+  });
+  return ops;
 };
 
 module.exports = stream => {
@@ -138,6 +113,7 @@ var edit = (doc) => {
 
   editor.on('contentChangedExt', (_, diffs) => {
     var ops = diffsToOps(diffs);
+    console.log(ops);
 
     ops.forEach(({ start, end, text, action }) => {
       var j = 0;
