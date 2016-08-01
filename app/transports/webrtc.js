@@ -62,7 +62,10 @@ module.exports = () => {
     server() {
       return new Promise((resolve, reject) => {
         var channel = initDataChannel(pc);
-        resolve(masterify(toSocket(channel)));
+
+        channel.onopen = e => {
+          resolve(masterify(toSocket(channel)));
+        };
 
         createOffer(pc).then(offer => {
           var offerStr = shrinkDesc(offer);
